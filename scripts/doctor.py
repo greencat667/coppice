@@ -34,6 +34,8 @@ DEFAULT_BUDGETS = {
 }
 DEFAULT_ROOT_ALLOWED = ["START-HERE.md", "AGENTS.md", "CLAUDE.md", "soul.md", "setup.md", "TASKS*.md", "README.md"]
 REQUIRED_FILES = ["START-HERE.md", "soul.md", "setup.md"]
+START_NAMES = ["START-HERE.md", "START HERE.md", "START_HERE.md"]   # older workspaces often use a space
+PLACEHOLDER_TARGETS = {"url", "link", "href", "path", "source", "citation", "todo", "tbc", "..."}
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".obsidian", ".venv", "venv", "site-packages", "dist", "build"}
 # A folder with any of these is someone's code project: its links and fixtures aren't workspace notes.
 CODE_MARKERS = (".git", "package.json", "pyproject.toml", "setup.py", "requirements.txt", "Cargo.toml", "go.mod",
@@ -44,6 +46,7 @@ TEXT_SUFFIXES = {".md", ".txt", ".yaml", ".yml", ".json", ".toml", ".csv", ".htm
 HEARTBEAT_NAME = "doctor"   # the name this script records in memory/heartbeat.md; matches setup.md's Scheduled tasks table
 WORKING_MAX_DAYS = 7
 LOG_STALE_DAYS = 30
+MAX_SCAN_BYTES = 1_000_000   # text files bigger than this are logs or data dumps, not notes: not scanned line by line
 LAST_UPDATED_STALE_DAYS = 180
 
 # Credential patterns. Values are never printed in full.
@@ -132,10 +135,10 @@ def parse_budgets(setup_text: str):
     budgets, root_allowed = dict(DEFAULT_BUDGETS), list(DEFAULT_ROOT_ALLOWED)
     m = re.search(r"```ya?ml\s*\n(.*?)```", setup_text, re.S)
     if not m:
-        budgets["project_roots"], budgets["ignore"] = ["projects"], []
+        budgets["project_roots"], budgets["ignore"], budgets["secrets_accepted"] = ["projects"], [], []
         return budgets, root_allowed, False
     block, current = m.group(1), None
-    found_allowed, found_roots, found_ignore = [], [], []
+    found_allowed, found_roots, found_ignore, found_accepted = [], [], [], []
     for raw in block.splitlines():
         line = raw.split("#", 1)[0].rstrip()
         if not line.strip():
@@ -156,8 +159,11 @@ def parse_budgets(setup_text: str):
             found_roots.append(s[1:].strip().strip("'\"").rstrip("/"))
         elif current == "ignore" and s.startswith("-"):
             found_ignore.append(s[1:].strip().strip("'\""))
+        elif current == "secrets_accepted" and s.startswith("-"):
+            found_accepted.append(s[1:].strip().strip("'\""))
     budgets["project_roots"] = found_roots or ["projects"]
     budgets["ignore"] = found_ignore
+    budgets["secrets_accepted"] = found_accepted
     return budgets, (found_allowed or root_allowed), True
 
 
@@ -265,14 +271,20 @@ def rel(p: Path, root: Path) -> str:
 
 # ---------------------------------------------------------------- checks
 
+def start_file(ws):
+    return next((n for n in START_NAMES if (ws / n).exists()), "START-HERE.md")
+
+
 def check_required(ws, rep):
     for f in REQUIRED_FILES:
+        if f == "START-HERE.md" and (ws / start_file(ws)).exists():
+            continue
         if not (ws / f).exists():
             rep.add("error", "required-files", f"`{f}` is missing. The session protocol depends on it.", f)
 
 
 def check_startup(ws, rep, budgets, contexts):
-    base = sum(est_tokens(read(ws / f)) for f in ["START-HERE.md", "soul.md", "setup.md"])
+    base = sum(est_tokens(read(ws / f)) for f in [start_file(ws), "soul.md", "setup.md"])
     worst = None
     for c in contexts:
         tasks_t = est_tokens(read(ws / c["tasks"])) if (ws / c["tasks"]).exists() else 0
@@ -382,7 +394,19 @@ def check_working(ws, rep, today):
 
 
 PROJECT_DIR = re.compile(r"^(\d{3,4})\s*-\s*.+")
-NEXT_NUMBER = re.compile(r"(?i)next project number(?:\s*\(([^)]+)\))?:\s*\**\s*(\d+)")
+# "Next project number: 012", "Next project number (work-projects): 012", or "Next client project number: 012",
+# where a word before "project" names the root it belongs to ("client" → "client projects", "personal" → "personal-projects").
+NEXT_NUMBER = re.compile(r"(?i)next\s+(?:([A-Za-z][\w-]*)\s+)?project number(?:\s*\(([^)]+)\))?:\s*\**\s*(\d+)")
+
+
+def next_line_for(root, lines, only_root):
+    for m in lines:
+        prefix, paren = (m.group(1) or "").strip(), (m.group(2) or "").strip().rstrip("/")
+        if paren == root or (prefix and prefix.lower() in root.lower()):
+            return m
+    if only_root:
+        return next((m for m in lines if not m.group(1) and not m.group(2)), None)
+    return None
 
 
 def check_projects(ws, rep, budgets, today, fix):
@@ -429,24 +453,22 @@ def check_projects(ws, rep, budgets, today, fix):
             rep.add("warn", "projects-index", f"`memory/projects.md` lists {len(ghosts)} project(s) in `{root}/` with no matching folder: "
                     + ", ".join(ghosts[:6]) + ("…" if len(ghosts) > 6 else "") + ".", "memory/projects.md")
         # The next-number line: unlabelled if there's one root, labelled "(root)" if there are several.
-        line = next((m for m in next_lines if (m.group(1) or "").strip().rstrip("/") == root), None)
-        if line is None and len(roots) == 1:
-            line = next((m for m in next_lines if not m.group(1)), None)
+        line = next_line_for(root, next_lines, len(roots) == 1)
         highest = max(list(folders) + [n for n in indexed if n not in template_rows], default=0)
         label = "" if len(roots) == 1 else f" ({root})"
         if line is None:
             rep.add("warn", "next-number", f"`memory/projects.md` has no \"Next project number{label}:\" line.", "memory/projects.md")
-        elif int(line.group(2)) <= highest:
-            width = len(line.group(2))
+        elif int(line.group(3)) <= highest:
+            width = len(line.group(3))
             want = f"{highest + 1:0{width}d}"
             if fix:
-                text = text[: line.start(2)] + want + text[line.end(2):]
+                text = text[: line.start(3)] + want + text[line.end(3):]
                 index_p.write_text(text, encoding="utf-8")
                 next_lines = list(NEXT_NUMBER.finditer(text))
                 active_body = section(text, "Active")
-                rep.fixes.append(f"Updated the next project number{label} in `memory/projects.md` from {line.group(2)} to {want}.")
+                rep.fixes.append(f"Updated the next project number{label} in `memory/projects.md` from {line.group(3)} to {want}.")
             else:
-                rep.add("error", "next-number", f"Next project number{label} is {line.group(2)}, but project {highest:03d} already exists. "
+                rep.add("error", "next-number", f"Next project number{label} is {line.group(3)}, but project {highest:03d} already exists. "
                         f"It should be {want}.", "memory/projects.md")
         for n in active & set(folders):
             log = folders[n] / "log.md"
@@ -464,7 +486,7 @@ MD_LINK = re.compile(r"(?<!!)\[[^\]]*\]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+\"[^\"
 
 def check_links(ws, rep):
     for p, _ in iter_text_files(ws, owned_only=True):
-        if p.suffix.lower() != ".md":
+        if p.suffix.lower() != ".md" or p.stat().st_size > MAX_SCAN_BYTES:
             continue
         broken = []
         text = read(p)
@@ -474,7 +496,7 @@ def check_links(ws, rep):
             if re.match(r"^[a-z][a-z0-9+.\-]*:", target, re.I) or target.startswith("#"):
                 continue
             path_part = urllib.parse.unquote(target.split("#", 1)[0])
-            if not path_part or "NNN" in path_part or "[" in path_part:
+            if not path_part or "NNN" in path_part or "[" in path_part or path_part.strip().lower() in PLACEHOLDER_TARGETS:
                 continue
             dest = (p.parent / path_part) if not path_part.startswith("/") else (ws / path_part.lstrip("/"))
             if not dest.exists() and not (not dest.suffix and dest.with_suffix(".md").exists()):
@@ -488,9 +510,13 @@ def mask(value: str) -> str:
     return value[:4] + "…" + f"({len(value)} chars)" if len(value) > 8 else "…"
 
 
-def check_secrets(ws, rep):
-    in_code = {}
+def check_secrets(ws, rep, accepted=()):
+    in_code, in_accepted, too_big = {}, {}, []
     for p, code in iter_text_files(ws):
+        if p.stat().st_size > MAX_SCAN_BYTES:
+            if code is None:
+                too_big.append(rel(p, ws))
+            continue
         for i, line in enumerate(read(p).splitlines(), 1):
             for label, pat in SECRET_PATTERNS:
                 m = pat.search(line)
@@ -500,12 +526,23 @@ def check_secrets(ws, rep):
                 if label == "Credential assignment":
                     if PLACEHOLDER_HINT.search(value) or not (re.search(r"\d", value) and re.search(r"[A-Za-z]", value)):
                         continue
-                if code is not None:
+                r = rel(p, ws).replace(os.sep, "/")
+                if any(fnmatch.fnmatch(r, g) for g in accepted):
+                    in_accepted[r] = in_accepted.get(r, 0) + 1
+                elif code is not None:
                     in_code[code] = in_code.get(code, 0) + 1
                 else:
                     rep.add("error", "secrets", f"Possible {label} in `{rel(p, ws)}` line {i} ({mask(value)}). "
                             "Move it to the keychain or an uncommitted `.env`, and rotate it if the file was ever shared (rule 15).", rel(p, ws))
                 break
+    if too_big:
+        shown = ", ".join(f"`{f}`" for f in too_big[:5]) + (f" and {len(too_big) - 5} more" if len(too_big) > 5 else "")
+        rep.add("info", "secrets", f"{len(too_big)} text file(s) over {MAX_SCAN_BYTES // 1_000_000} MB weren't scanned for secrets: {shown}. "
+                "Large files are usually logs or data; if one isn't, check it by hand.", ".")
+    if in_accepted:
+        files = ", ".join(f"`{f}` ({n})" for f, n in sorted(in_accepted.items()))
+        rep.add("info", "secrets", f"{sum(in_accepted.values())} possible secret(s) in files you've accepted the risk for in `setup.md`: {files}. "
+                "Still worth moving to the keychain when there's time; anyone who can read these files can use them.", "setup.md")
     for code, n in sorted(in_code.items()):
         rep.add("info", "secrets", f"{n} possible secret(s) inside the code project `{rel(code, ws)}`. Often test fixtures or examples, "
                 "but worth a look: run the doctor inside that folder for details.", rel(code, ws))
@@ -614,7 +651,7 @@ def run(ws: Path, today: dt.date, fix: bool = False, running_as: str | None = No
     check_working(ws, rep, today)
     check_projects(ws, rep, budgets, today, fix)
     check_links(ws, rep)
-    check_secrets(ws, rep)
+    check_secrets(ws, rep, budgets.get("secrets_accepted", []))
     check_heartbeat(ws, rep, setup_text, today, running_as)
     check_reports(ws, rep, budgets, today)
     check_last_updated(ws, rep, today)

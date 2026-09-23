@@ -74,6 +74,8 @@ project_roots:                # folders holding numbered project folders; list s
   - projects
 ignore:                       # paths the doctor skips entirely; uncomment and edit to use
   # - "*/saved-pages/*"
+secrets_accepted:             # files where you've knowingly left a credential for now; reported as one note, not errors
+  # - "context/old-setup-notes.md"
 root_allowed:                 # the only files allowed in the workspace root
   - START-HERE.md
   - AGENTS.md

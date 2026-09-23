@@ -176,6 +176,28 @@ class BrokenWorkspace(unittest.TestCase):
             (ws / "context" / "llm.md").write_text("max_tokens = 4096\nstartup_tokens: 8000\ntokens: 1234567890123456789\n")
             self.assertNotIn("secrets", checks(doctor.run(ws, TODAY)))
 
+    def test_accepted_secrets_become_one_note(self):
+        with Workspace() as ws:
+            v = "7d3f9a8e6b5c4d3e" + "2f1a0b9c8d7e6f5a"
+            (ws / "context" / "board-setup.md").write_text(f"board_token = {v}\nboard_key = {v}\n")
+            (ws / "context" / "other.md").write_text(f"db_password = {v}\n")
+            setup = ws / "setup.md"
+            setup.write_text(setup.read_text().replace("root_allowed:", "secrets_accepted:\n  - context/board-setup.md\nroot_allowed:"))
+            rep = doctor.run(ws, TODAY)
+            errors = [f for f in rep.findings if f.check == "secrets" and f.severity == "error"]
+            notes = [f for f in rep.findings if f.check == "secrets" and f.severity == "info"]
+            self.assertEqual(len(errors), 1)                 # other.md is still an error
+            self.assertEqual(len(notes), 1)                  # both accepted hits summarised in one note
+            self.assertIn("board-setup.md", notes[0].message)
+
+    def test_huge_files_skipped_with_a_note(self):
+        with Workspace() as ws:
+            (ws / "context" / "big-log.txt").write_text("line of log output\n" * 80000)
+            rep = doctor.run(ws, TODAY)
+            notes = [f.message for f in rep.findings if f.check == "secrets"]
+            self.assertEqual(len(notes), 1)
+            self.assertIn("big-log.txt", notes[0])
+
     def test_placeholders_are_not_secrets(self):
         with Workspace() as ws:
             (ws / "context" / "setup-notes.md").write_text("api_key: YOUR_API_KEY_GOES_HERE_123\npassword = [your password here 12345]\n")
@@ -275,6 +297,37 @@ class RealWorldNoise(unittest.TestCase):
             setup = ws / "setup.md"
             setup.write_text(setup.read_text().replace('  # - "*/saved-pages/*"', '  - "*/saved-pages/*"'))
             self.assertNotIn("links", checks(doctor.run(ws, TODAY)))
+
+    def test_start_here_with_a_space(self):
+        with Workspace() as ws:
+            (ws / "START-HERE.md").rename(ws / "START HERE.md")
+            setup = ws / "setup.md"
+            setup.write_text(setup.read_text().replace("  - START-HERE.md", "  - START HERE.md"))
+            rep = doctor.run(ws, TODAY)
+            self.assertNotIn("required-files", checks(rep))
+            self.assertNotIn("root-clutter", checks(rep))
+
+    def test_placeholder_link_targets(self):
+        with Workspace() as ws:
+            (ws / "context" / "draft.md").write_text("Cite as ([Source](URL)) or ([Org](url)), see [here](link).\n")
+            self.assertNotIn("links", checks(doctor.run(ws, TODAY)))
+
+    def test_next_number_named_by_a_word(self):
+        with Workspace() as ws:
+            setup = ws / "setup.md"
+            text = setup.read_text()
+            assert "  - projects\n" in text
+            setup.write_text(text.replace("  - projects\n", "  - client projects\n  - personal-projects\n", 1))
+            for root, n in (("client projects", "011 - Report"), ("personal-projects", "030 - Garden")):
+                d = ws / root / n
+                d.mkdir(parents=True)
+                (d / "log.md").write_text("# log\n")
+            idx = ws / "memory" / "projects.md"
+            idx.write_text("# Projects\n\n> Next client project number: **012**. Next personal project number: **031**.\n\n## Active\n\n"
+                           "| # | Folder |\n|---|---|\n| 011 | `client projects/011 - Report/` |\n| 030 | `personal-projects/030 - Garden/` |\n")
+            rep = doctor.run(ws, TODAY)
+            self.assertNotIn("next-number", checks(rep), [f.message for f in rep.findings])
+            self.assertNotIn("projects-index", checks(rep))
 
     def test_many_stray_files_grouped(self):
         with Workspace() as ws:

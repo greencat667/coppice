@@ -49,6 +49,21 @@ Finally it built a deliberately messy existing setup and ran adopt mode against 
   - the weekly review couldn't see unindexed projects
   - two gaps in adopt mode: a setup with no start-here file, and a tasks file that's entirely history
 
+## Dogfooding
+
+Coppice was then used to adopt the long-lived workspace it grew out of. Adopt mode's read-only survey and a doctor run against about 900 project and note files found real problems the workspace's own conventions had missed:
+
+- a prompt-driven archive task that had reported success for three weeks while archiving nothing
+- a next-project-number line that had fallen five projects behind
+
+The run also found five things to improve in the doctor itself, now fixed and tested:
+
+- **Accepted risks.** Files where someone has knowingly left a credential for now can be listed under `secrets_accepted`. They're reported as one reminder instead of errors every week.
+- **Large files.** Log and data files over 1 MB are skipped by the line-by-line scans (with a note), after a 7 MB file made the check crawl.
+- **Start file name.** `START HERE.md` (with a space) is accepted as the start file.
+- **Placeholder links.** Link targets such as `(URL)` or `(link)` in drafts are ignored.
+- **Next-number lines named with a word.** A line like "Next client project number: 012" is matched to the root whose name contains that word.
+
 ### What to re-test after changes
 
 After changes to a skill or scheduled task, re-run the newcomer test with a different newcomer and fresh curveballs. A test that's passed once starts to shape the thing it tests.

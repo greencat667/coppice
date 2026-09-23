@@ -50,7 +50,7 @@ These exclusions come from running the doctor against a real workspace that had 
 
 The doctor looks for well-known token formats (GitHub, Anthropic, OpenAI-style, Slack, AWS, Google, private keys) and for assignments such as `api_key: …` or `token = …` with a long mixed-character value. Values that look like placeholders (`YOUR_API_KEY`, `[your token]`, `xxxx`) are ignored.
 
-It never prints a value in full: the report shows the first four characters and the length. It will miss some secrets and occasionally flag something harmless, so treat it as a smoke alarm, not a guarantee.
+It never prints a value in full: the report shows the first four characters and the length. If you've knowingly left a credential in a file for now, list that file under `secrets_accepted:` in `setup.md`. Its findings then become a single reminder note instead of errors on every run. Any new secret anywhere else is still an error. It will miss some secrets and occasionally flag something harmless, so treat it as a smoke alarm, not a guarantee.
 
 ## Several project folders
 
