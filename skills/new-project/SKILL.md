@@ -25,7 +25,7 @@ If they're unsure, suggest the lighter tier. It's easy to promote later.
 ## 2. For a Project
 
 1. **Root and number.** Read `setup.md` for `project_roots`. If there's more than one, ask which. Take the number from the matching "Next project number" line in `memory/projects.md`.
-2. **Folder.** Copy `projects/_template/` (or the root's template) to `<root>/NNN - Name/`. Use a short, plain name.
+2. **Folder.** Copy `projects/_template/` (or the root's template) to `<root>/NNN - Name/`. Use a short, plain name. Delete `status-board.md` unless the project is fast-moving and long-running: it's optional, and an unused one just adds noise.
 3. **`index.md`.** Fill in the one-line description, status, goal and first next step.
 4. **`brief/brief.md`.** Fill in the three lines: objective, approach, success. Draft them from the conversation and confirm them.
 5. **`log.md`.** Write the first entry: date, why the project exists, the first step taken.

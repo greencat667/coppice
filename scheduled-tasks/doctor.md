@@ -1,5 +1,5 @@
 ---
-name: coppice-doctor
+name: doctor
 description: Weekly health check of the Coppice workspace — budgets, clutter, logs, links, secrets and heartbeats — with safe mechanical fixes
 schedule: At 07:40, only on Monday
 cronExpression: 40 7 * * 1
@@ -7,6 +7,12 @@ enabled: true
 ---
 
 You are running the weekly health check for this Coppice workspace. Your job is to run `coppice doctor`, apply only its safe mechanical fixes, and tell the person what needs their judgement. You don't fix anything the doctor didn't fix itself.
+
+## Step 0 — Check this task is wanted
+
+Look for `doctor` in the **Scheduled tasks** table in `setup.md`. If it isn't there, the person either declined it or never set it up: **don't run it.** Say so in one line, offer to add it to the table if they'd like it, and write nothing, not even a heartbeat line.
+
+(If the person asks for this in a conversation rather than it running on a schedule, just do it; the check is for unattended runs.)
 
 ## Step 1 — Run the doctor
 
@@ -20,7 +26,7 @@ python3 context/coppice/doctor.py --fix --report reports/doctor-$(date +%F).md -
 - `--report` writes the full report to `reports/`.
 - `--heartbeat` records this run in `memory/heartbeat.md`.
 
-If Python isn't available, don't try to reproduce the checks by hand. Write a line to `memory/heartbeat.md` — `| YYYY-MM-DD | coppice-doctor | failed | python3 not available |` — and tell the person.
+If Python isn't available, don't try to reproduce the checks by hand. Write a line to `memory/heartbeat.md` — `| YYYY-MM-DD | doctor | failed | python3 not available |` — and tell the person.
 
 ## Step 2 — Report back
 

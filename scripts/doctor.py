@@ -41,6 +41,7 @@ CODE_MARKERS = (".git", "package.json", "pyproject.toml", "setup.py", "requireme
 # Captured or archived material: links in it point at the original source, so they aren't checked.
 NOT_OWNED_DIRS = {"inputs", "raw", "archive", "snapshots"}
 TEXT_SUFFIXES = {".md", ".txt", ".yaml", ".yml", ".json", ".toml", ".csv", ".html", ".js", ".py", ".sh", ".ics"}
+HEARTBEAT_NAME = "doctor"   # the name this script records in memory/heartbeat.md; matches setup.md's Scheduled tasks table
 WORKING_MAX_DAYS = 7
 LOG_STALE_DAYS = 30
 LAST_UPDATED_STALE_DAYS = 180
@@ -54,8 +55,11 @@ SECRET_PATTERNS = [
     ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b")),
     ("Private key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")),
+    # The keyword may be joined to a name by "_" or "-" (TRELLO_TOKEN, db-password, api_key_v2), so the boundary is
+    # "not a letter" rather than \b, which treats "_" as part of the word and missed snake_case names entirely.
     ("Credential assignment", re.compile(
-        r"(?i)\b(?:api[_ -]?key|api[_ -]?token|access[_ -]?token|secret|password|passwd|token)\b[\"'`]?\s*[:=]\s*[\"'`]?"
+        r"(?i)(?<![A-Za-z])(?:api[_ -]?key|api[_ -]?token|access[_ -]?token|auth[_ -]?token|client[_ -]?secret|secret|"
+        r"password|passwd|pwd|token)(?:[_-][A-Za-z0-9_]*)?[\"'`]?\s*[:=]\s*[\"'`]?"
         r"(?P<value>[A-Za-z0-9_\-\.\/+]{16,})")),
 ]
 PLACEHOLDER_HINT = re.compile(r"(?i)(example|placeholder|your[_-]|xxxx|<|\[|\.\.\.|changeme|redacted)")
@@ -510,7 +514,7 @@ def check_secrets(ws, rep):
 HEARTBEAT_ROW = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})[^|]*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|")
 
 
-def check_heartbeat(ws, rep, setup_text, today):
+def check_heartbeat(ws, rep, setup_text, today, running_as=None):
     schedule = parse_schedule(setup_text)
     if not schedule:
         return
@@ -523,6 +527,8 @@ def check_heartbeat(ws, rep, setup_text, today):
                 d, task, result = dt.date.fromisoformat(m.group(1)), strip_code(m.group(2)), m.group(3).strip().lower()
                 if task not in last or d >= last[task]:
                     last[task], last_result[task] = d, result
+    if running_as:                      # this run is about to record its own heartbeat; don't warn about ourselves
+        last[running_as], last_result[running_as] = today, "ran"
     if not last:
         rep.add("info", "heartbeat", "No scheduled task has recorded a run in `memory/heartbeat.md` yet. Expected in a new workspace; "
                 "if tasks have been set up for a while, check they write their heartbeat line.", "memory/heartbeat.md")
@@ -591,7 +597,7 @@ def render(rep: Report, ws: Path, today: dt.date) -> str:
     return "\n".join(lines) + "\n"
 
 
-def run(ws: Path, today: dt.date, fix: bool = False) -> Report:
+def run(ws: Path, today: dt.date, fix: bool = False, running_as: str | None = None) -> Report:
     rep = Report()
     setup_text = read(ws / "setup.md")
     budgets, root_allowed, has_block = parse_budgets(setup_text)
@@ -609,7 +615,7 @@ def run(ws: Path, today: dt.date, fix: bool = False) -> Report:
     check_projects(ws, rep, budgets, today, fix)
     check_links(ws, rep)
     check_secrets(ws, rep)
-    check_heartbeat(ws, rep, setup_text, today)
+    check_heartbeat(ws, rep, setup_text, today, running_as)
     check_reports(ws, rep, budgets, today)
     check_last_updated(ws, rep, today)
     return rep
@@ -625,7 +631,7 @@ def append_heartbeat(ws: Path, today: dt.date, rep: Report):
         text = read(hb)
         if not text.endswith("\n"):
             fh.write("\n")
-        fh.write(f"| {today} | doctor | ran | {note} |\n")
+        fh.write(f"| {today} | {HEARTBEAT_NAME} | ran | {note} |\n")
 
 
 def main(argv=None):
@@ -642,7 +648,7 @@ def main(argv=None):
         print(f"Not a folder: {ws}", file=sys.stderr)
         return 2
     today = dt.date.fromisoformat(args.today) if args.today else dt.date.today()
-    rep = run(ws, today, fix=args.fix)
+    rep = run(ws, today, fix=args.fix, running_as=HEARTBEAT_NAME if args.heartbeat else None)
     out = (json.dumps({"today": str(today), "fixes": rep.fixes, "stats": rep.stats,
                        "findings": [f.__dict__ for f in rep.findings]}, indent=2, ensure_ascii=False)
            if args.json else render(rep, ws, today))

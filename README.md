@@ -6,7 +6,7 @@ Coppicing is cutting a tree back regularly so it regrows vigorously and lives fo
 
 It grew out of eight months of daily use as a personal AI setup in Claude Cowork. Nearly every rule in it exists because something broke without it; [`docs/rules.md`](docs/rules.md) records what.
 
-> **Status: nearly ready.** Templates, docs, the health check, scheduled tasks, skills and a worked example are done. Next is testing from an empty folder, then publishing. See [Roadmap](#roadmap).
+> **Status: nearly ready.** Everything is built and has been through a newcomer test. Publishing is next. See [Roadmap](#roadmap).
 
 ## What you get
 
@@ -71,7 +71,8 @@ coppice/
 │   ├── layers.md       # The layer model and "where does this go?"
 │   ├── patterns.md     # Named ways of working: critique passes, evidence mode, handoffs…
 │   ├── doctor.md       # What the health check checks, skips and fixes
-│   └── maturity.md     # Levels 0–3: what to add, and when
+│   ├── maturity.md     # Levels 0–3: what to add, and when
+│   └── testing.md      # How it was tested, and what the tests found
 ├── scripts/
 │   ├── doctor.py       # coppice doctor: the health check (Python 3.9+, standard library only)
 │   ├── trim.py         # the weekly cut-back, run by the archive-trim task
@@ -87,7 +88,8 @@ coppice/
 - [x] **Phase 1:** starter workspace templates; rules, layers and patterns docs
 - [x] **Phase 2:** `coppice doctor`, a health check for budgets, root clutter, logs, links, secrets and heartbeats, with a weekly scheduled task and a test suite
 - [x] **Phase 3:** scheduled tasks (a morning briefing whose flags escalate, weekly review, archive trim, doctor); `coppice-setup` (new, update and adopt modes), `new-project` and `end-of-session` skills; `trim.py`; a fictional worked-example workspace
-- [ ] **Phase 4:** tested from an empty folder with a fresh session, and with a local model
+- [x] **Phase 4:** tested by a fresh session playing a newcomer, from an empty folder; 1 blocker and 11 smaller issues found and fixed — see [`docs/testing.md`](docs/testing.md)
+- [ ] **Local-model check:** the startup read on a local model
 - [ ] **Phase 5:** published
 
 ## Pairs well with

@@ -161,6 +161,21 @@ class BrokenWorkspace(unittest.TestCase):
                 self.assertNotIn(fake_github, f.message)
                 self.assertNotIn("39281706afbecd12", f.message)
 
+    def test_snake_case_credential_names(self):
+        # Regression: a \b boundary missed keywords joined to a name by "_" (found in the phase 4 newcomer test).
+        with Workspace() as ws:
+            v = "7d3f9a8e6b5c4d3e" + "2f1a0b9c8d7e6f5a"
+            lines = [f"trello_token = {v}", f"TRELLO_API_KEY={v}", f"db_password: {v}", f"auth-token: '{v}'",
+                     f"client_secret = {v}", f"api_key_v2 = {v}"]
+            (ws / "context" / "old-setup.md").write_text("\n".join(lines) + "\n")
+            hits = [f for f in doctor.run(ws, TODAY).findings if f.check == "secrets"]
+            self.assertEqual(len(hits), len(lines), [h.message for h in hits])
+
+    def test_token_budgets_are_not_secrets(self):
+        with Workspace() as ws:
+            (ws / "context" / "llm.md").write_text("max_tokens = 4096\nstartup_tokens: 8000\ntokens: 1234567890123456789\n")
+            self.assertNotIn("secrets", checks(doctor.run(ws, TODAY)))
+
     def test_placeholders_are_not_secrets(self):
         with Workspace() as ws:
             (ws / "context" / "setup-notes.md").write_text("api_key: YOUR_API_KEY_GOES_HERE_123\npassword = [your password here 12345]\n")
@@ -278,6 +293,16 @@ class CommandLine(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertTrue((ws / "reports" / "doctor.md").exists())
             self.assertIn("| 2026-09-23 | doctor | ran |", (ws / "memory" / "heartbeat.md").read_text())
+
+    def test_first_run_does_not_warn_about_itself(self):
+        # Regression: on its first scheduled run the doctor warned that the doctor had never run (phase 4 newcomer test).
+        with Workspace() as ws:
+            hb = ws / "memory" / "heartbeat.md"
+            hb.write_text(hb.read_text() + "| 2026-09-22 | archive-trim | ran | ok |\n")
+            rep = doctor.run(ws, TODAY, running_as="doctor")
+            self.assertNotIn("doctor", " ".join(f.message for f in rep.findings if f.check == "heartbeat"))
+            rep = doctor.run(ws, TODAY)
+            self.assertIn("doctor", " ".join(f.message for f in rep.findings if f.check == "heartbeat"))
             (ws / "setup.md").unlink()
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(doctor.main(["-w", str(ws), "--today", "2026-09-23"]), 1)

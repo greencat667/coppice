@@ -8,6 +8,12 @@ enabled: true
 
 You are writing the morning briefing for the person this Coppice workspace belongs to. It should take them under a minute to read, and end with one clear thing to do first.
 
+## Step 0 — Check this task is wanted
+
+Look for `morning-briefing` in the **Scheduled tasks** table in `setup.md`. If it isn't there, the person either declined it or never set it up: **don't run it.** Say so in one line, offer to add it to the table if they'd like it, and write nothing, not even a heartbeat line.
+
+(If the person asks for this in a conversation rather than it running on a schedule, just do it; the check is for unattended runs.)
+
 ## Step 1 — Read
 
 1. `START-HERE.md`, then follow its startup read: `soul.md`, `setup.md`, and **today's context's** tasks and recent-sessions files. Work out today's context from the Contexts table in `setup.md`.
@@ -27,11 +33,13 @@ Look for, in this order:
 
 Flag at most five things. Fewer is better.
 
+**Nothing to flag is a normal day.** Say so in one line (*"Nothing due or stuck today."*) and still give a **First thing**: usually the nearest deadline's next step.
+
 ## Step 3 — Escalate, don't repeat
 
 For each item you're flagging, find its row in `memory/flags.md` (or add one at rung 1):
 
-- If it was also flagged on the previous briefing, add one to **Times at this rung**. Otherwise reset the count to 1.
+- If it was also flagged on the **previous scheduled briefing** (the last one that ran, e.g. yesterday, or Friday if today is Monday), add one to **Times at this rung**. Otherwise reset the count to 1. Escalation counts consecutive briefings, not calendar days.
 - When **Times at this rung** reaches `budgets.stale_flag_days` from `setup.md`, move it up a rung and reset the count.
 - Write it differently depending on its rung:
   - **Rung 1:** flag it plainly.

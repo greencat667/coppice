@@ -8,6 +8,12 @@ enabled: true
 
 You are running the weekly cut-back for this Coppice workspace. It keeps the files read every session small by moving what has aged out of them. It's the coppicing: regular, modest, and done by a script so it doesn't depend on anyone remembering.
 
+## Step 0 — Check this task is wanted
+
+Look for `archive-trim` in the **Scheduled tasks** table in `setup.md`. If it isn't there, the person either declined it or never set it up: **don't run it.** Say so in one line, offer to add it to the table if they'd like it, and write nothing, not even a heartbeat line.
+
+(If the person asks for this in a conversation rather than it running on a schedule, just do it; the check is for unattended runs.)
+
 ## Step 1 — Run the trim
 
 From the workspace folder:
