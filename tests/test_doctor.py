@@ -52,6 +52,13 @@ class FreshWorkspace(unittest.TestCase):
             self.assertLess(rep.stats["startup_tokens"]["main"], 4000)
 
 
+class ExampleWorkspace(unittest.TestCase):
+    def test_example_is_clean(self):
+        rep = doctor.run(REPO / "examples" / "workspace", dt.date(2026, 9, 28))
+        self.assertEqual([f.message for f in rep.findings if f.severity in ("error", "warn")], [])
+        self.assertEqual(set(rep.stats["startup_tokens"]), {"work", "personal"})
+
+
 class BrokenWorkspace(unittest.TestCase):
     def test_missing_required_file(self):
         with Workspace() as ws:

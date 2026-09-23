@@ -18,6 +18,13 @@
 |---|---|---|---|---|---|---|
 | 001 | [Name] | Project | Active | `projects/001 - Name/` | [one line] | [one line] |
 
+## Light
+
+*Small, short pieces of work with one output. No number, no folder.*
+
+| Item | File | Next |
+|---|---|---|
+
 ## Paused or waiting
 
 | # | Project | Why paused | Revisit |

@@ -13,3 +13,4 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover tests
       - run: python scripts/doctor.py --workspace workspace
+      - run: python scripts/doctor.py --workspace examples/workspace --today 2026-09-28

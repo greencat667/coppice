@@ -1,8 +1,8 @@
 ---
 name: coppice-doctor
 description: Weekly health check of the Coppice workspace — budgets, clutter, logs, links, secrets and heartbeats — with safe mechanical fixes
-schedule: At 08:00, only on Monday
-cronExpression: 0 8 * * 1
+schedule: At 07:40, only on Monday
+cronExpression: 40 7 * * 1
 enabled: true
 ---
 

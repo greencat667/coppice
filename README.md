@@ -6,7 +6,7 @@ Coppicing is cutting a tree back regularly so it regrows vigorously and lives fo
 
 It grew out of eight months of daily use as a personal AI setup in Claude Cowork. Nearly every rule in it exists because something broke without it; [`docs/rules.md`](docs/rules.md) records what.
 
-> **Status: under construction.** Phases 1 and 2 are done: templates, docs and the `coppice doctor` health check. Scheduled tasks, the setup skill and a worked example are next. See [Roadmap](#roadmap).
+> **Status: nearly ready.** Templates, docs, the health check, scheduled tasks, skills and a worked example are done. Next is testing from an empty folder, then publishing. See [Roadmap](#roadmap).
 
 ## What you get
 
@@ -16,6 +16,7 @@ It grew out of eight months of daily use as a personal AI setup in Claude Cowork
 - **Projects** with a lean index, numbered folders and append-only logs.
 - **A learning loop:** the assistant notices corrections that generalise, logs them, and proposes the confirmed ones as changes you approve.
 - **Budgets** for every file read at startup, so the startup read stays under about 8,000 tokens. That's fast even on a local model.
+- **Scheduled tasks** that tend it: a weekly trim, a weekly health check, and optionally a morning briefing whose repeated flags escalate (flag → propose an action → ask whether to park it) instead of nagging, and a weekly review.
 - **A health check** (`coppice doctor`) that checks the rules instead of relying on anyone remembering them: budgets, clutter, missing logs, project numbering, broken links, secrets written into files, and scheduled tasks that have quietly stopped. It fixes only the mechanical problems and reports the rest. See [`docs/doctor.md`](docs/doctor.md).
 
 ## How it's organised
@@ -35,16 +36,19 @@ The full model, including where every kind of information goes, is in [`docs/lay
 
 ## Getting started
 
-Until the setup skill lands, set it up by hand. It takes about 15 minutes.
+**Ask Claude to set it up.** Make an empty folder somewhere stable and backed up (**not** a public git repository: it will hold notes about your life and work), open it in Claude Cowork or Claude Code, and say:
 
-1. Make an empty folder for your workspace. Somewhere stable, backed up, and **not** a public git repository: it will hold notes about your life and work.
-2. Copy everything in [`workspace/`](workspace/) into it.
-3. Copy the files in [`docs/`](docs/), plus [`scripts/doctor.py`](scripts/doctor.py), into your workspace's `context/coppice/` folder, so the assistant can read them and run the health check.
-4. Fill in `soul.md` and `setup.md`. Or open the folder in Cowork or Claude Code and say *"Interview me to fill in soul.md and setup.md"*.
-5. Start a session: *"Read START HERE and let's go."*
-6. Optional: set up the weekly health check from [`scheduled-tasks/doctor.md`](scheduled-tasks/doctor.md).
+> *"Set up a Coppice workspace in this folder. Follow `skills/coppice-setup/SKILL.md` from github.com/greencat667/coppice."*
 
-It works with Claude Cowork and Claude Code, and with other assistants that read `AGENTS.md`. No connectors are required. Calendar, task-board and messaging integrations are optional, and described in `setup.md`.
+Claude will copy the files in, interview you for `soul.md` and `setup.md` a few questions at a time, add your first tasks, and offer the scheduled tasks and companion skills. It finishes by running the health check. Level 0 takes about 15 minutes; see [`docs/maturity.md`](docs/maturity.md) for what to add when.
+
+**Already have a setup of your own?** Say *"Adopt Coppice for my existing setup"*. The same skill surveys what you have, read-only, and writes a migration plan in small, approved steps. Secrets come first. Nothing moves without a yes.
+
+**By hand:** copy everything in [`workspace/`](workspace/) into your folder; copy [`docs/`](docs/), [`scripts/doctor.py`](scripts/doctor.py) and [`scripts/trim.py`](scripts/trim.py) into its `context/coppice/`; fill in `soul.md` and `setup.md`; then start a session with *"Read START HERE and let's go."*
+
+To see what a workspace looks like after two weeks of use, browse the fictional [`examples/workspace/`](examples/workspace/).
+
+It works with Claude Cowork and Claude Code, and with other assistants that read `AGENTS.md`. No connectors are needed. Calendar, task-board and messaging integrations are optional, and described in `setup.md`.
 
 ## Repository
 
@@ -66,10 +70,15 @@ coppice/
 │   ├── rules.md        # Every rule, why it exists, and how it's kept
 │   ├── layers.md       # The layer model and "where does this go?"
 │   ├── patterns.md     # Named ways of working: critique passes, evidence mode, handoffs…
-│   └── doctor.md       # What the health check checks, skips and fixes
+│   ├── doctor.md       # What the health check checks, skips and fixes
+│   └── maturity.md     # Levels 0–3: what to add, and when
 ├── scripts/
-│   └── doctor.py       # coppice doctor (Python 3.9+, standard library only)
-├── scheduled-tasks/    # Templates for tasks that run on a schedule, e.g. the weekly doctor
+│   ├── doctor.py       # coppice doctor: the health check (Python 3.9+, standard library only)
+│   ├── trim.py         # the weekly cut-back, run by the archive-trim task
+│   └── make_example.py # regenerates examples/workspace
+├── scheduled-tasks/    # morning-briefing, weekly-review, archive-trim, doctor
+├── skills/             # coppice-setup (new / update / adopt), new-project, end-of-session
+├── examples/workspace/ # A fictional workspace two weeks in
 └── tests/              # python3 -m unittest discover tests
 ```
 
@@ -77,7 +86,7 @@ coppice/
 
 - [x] **Phase 1:** starter workspace templates; rules, layers and patterns docs
 - [x] **Phase 2:** `coppice doctor`, a health check for budgets, root clutter, logs, links, secrets and heartbeats, with a weekly scheduled task and a test suite
-- [ ] **Phase 3:** scheduled-task templates (briefings with escalation, weekly review, archive trim); `coppice-setup`, `new-project` and `end-of-session` skills; a fictional worked-example workspace
+- [x] **Phase 3:** scheduled tasks (a morning briefing whose flags escalate, weekly review, archive trim, doctor); `coppice-setup` (new, update and adopt modes), `new-project` and `end-of-session` skills; `trim.py`; a fictional worked-example workspace
 - [ ] **Phase 4:** tested from an empty folder with a fresh session, and with a local model
 - [ ] **Phase 5:** published
 

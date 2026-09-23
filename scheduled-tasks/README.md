@@ -14,6 +14,11 @@ Use `ran`, `skipped` (nothing to do) or `failed` (with the reason). `coppice doc
 
 | Task | When | What it does |
 |---|---|---|
-| [`doctor.md`](doctor.md) | Weekly | Runs `coppice doctor --fix` and reports what needs a human decision |
+| [`morning-briefing.md`](morning-briefing.md) | Weekdays | Today's context: calendar, what's due, what's stuck. Flags escalate through `memory/flags.md` instead of repeating |
+| [`weekly-review.md`](weekly-review.md) | Friday afternoon | What moved, what's stuck, the learning log's promote/prune/park pass, one question about the system |
+| [`archive-trim.md`](archive-trim.md) | Monday morning | Runs `trim.py`: moves aged-out entries to the archive, clears old heartbeat lines and reports |
+| [`doctor.md`](doctor.md) | Monday morning | Runs `doctor.py --fix` and reports what needs a human decision |
 
-*More tasks arrive in phase 3: morning briefing (with escalation), context-day briefing, weekly review, archive trim.*
+Schedules are suggestions; change the cron expression to suit your week. Run `archive-trim` before `doctor` so the doctor sees the trimmed files.
+
+These pair well with tasks published elsewhere: [session capture, wiki ripple and wiki lint](https://github.com/greencat667/llm-wiki-skills-claude), [signal monitoring](https://github.com/greencat667/trend-signal-monitor-skill-claude), [grant scanning](https://github.com/greencat667/grant-scanner-skill-claude) and [skill-gap detection](https://github.com/greencat667/skill-gap-detector-skill-claude). If you add one, have it write a heartbeat line and put its reports in `reports/`.
