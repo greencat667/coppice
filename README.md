@@ -6,8 +6,6 @@ Coppicing is cutting a tree back regularly so it regrows vigorously and lives fo
 
 It grew out of eight months of daily use as a personal AI setup in Claude Cowork. Nearly every rule in it exists because something broke without it; [`docs/rules.md`](docs/rules.md) records what.
 
-> **Status: nearly ready.** Everything is built and has been through a newcomer test. Publishing is next. See [Roadmap](#roadmap).
-
 ## What you get
 
 - **A profile of you** (`soul.md`): your rhythm, style and values, owned by you.
@@ -80,17 +78,14 @@ coppice/
 ├── scheduled-tasks/    # morning-briefing, weekly-review, archive-trim, doctor
 ├── skills/             # coppice-setup (new / update / adopt), new-project, end-of-session
 ├── examples/workspace/ # A fictional workspace two weeks in
-└── tests/              # python3 -m unittest discover tests
+├── tests/              # python3 -m unittest discover tests
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
-## Roadmap
+## How it was tested
 
-- [x] **Phase 1:** starter workspace templates; rules, layers and patterns docs
-- [x] **Phase 2:** `coppice doctor`, a health check for budgets, root clutter, logs, links, secrets and heartbeats, with a weekly scheduled task and a test suite
-- [x] **Phase 3:** scheduled tasks (a morning briefing whose flags escalate, weekly review, archive trim, doctor); `coppice-setup` (new, update and adopt modes), `new-project` and `end-of-session` skills; `trim.py`; a fictional worked-example workspace
-- [x] **Phase 4:** tested by a fresh session playing a newcomer, from an empty folder; 1 blocker and 11 smaller issues found and fixed — see [`docs/testing.md`](docs/testing.md)
-- [ ] **Local-model check:** the startup read on a local model
-- [ ] **Phase 5:** published
+The scripts have a test suite (`python3 -m unittest discover tests`) that runs on every push, on Python 3.9 and 3.12. The whole system was also put through a newcomer test: a fresh assistant session, with nothing but this repository and a fictional newcomer to play, set it up from scratch, used it for a compressed week, and ran adopt mode on a deliberately messy setup. It found one real bug and eleven rough edges, all now fixed. See [`docs/testing.md`](docs/testing.md).
 
 ## Pairs well with
 
@@ -99,6 +94,10 @@ coppice/
 - [autorefine](https://github.com/greencat667/autorefine-skill-claude) — reviews a session for wasted effort
 - [futures-innovation-toolkit](https://github.com/greencat667/futures-innovation-toolkit) — a library of skills to use inside the workspace
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Note that this repo isn't actively maintained, so responses to issues and PRs will be slow or may never come. Forking is the way to make it yours.
+
 ## License
 
-MIT — see [LICENSE](LICENSE). Not actively maintained once published; fork freely.
+MIT — see [LICENSE](LICENSE).

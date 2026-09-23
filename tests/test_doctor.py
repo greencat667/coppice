@@ -213,7 +213,7 @@ class RealWorldNoise(unittest.TestCase):
             (code / "package.json").write_text("{}")
             (code / "README.md").write_text("See [docs](docs/missing.md).\n")
             (code / "fixture.pem").write_text("x")
-            (code / "test_keys.md").write_text("-----BEGIN RSA PRIVATE KEY-----\n")
+            (code / "test_keys.md").write_text("-----BEGIN RSA " + "PRIVATE KEY-----\n")   # built at runtime; no key material
             idx = ws / "memory" / "projects.md"
             idx.write_text(idx.read_text().replace("Next project number: 001", "Next project number: 002")
                            .replace("`projects/001 - Name/`", "`projects/001 - App/`").replace("| 001 | [Name] |", "| 001 | App |"))
