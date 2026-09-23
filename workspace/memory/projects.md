@@ -3,6 +3,8 @@
 > A lean index. Full detail lives in each project's `index.md` and `log.md`; load those only when working on that project.
 >
 > **Next project number: 001**
+>
+> *(If `setup.md` lists several project roots, keep one line per root instead, e.g. `Next project number (work-projects): 012`.)*
 
 ## Tiers
 
