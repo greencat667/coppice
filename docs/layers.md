@@ -41,6 +41,7 @@ You don't need every layer. Levels 0 to 3 in `docs/maturity.md` say which to add
 | Something with no obvious home yet | the workspace's `working/`, filed at the end of the session | the root |
 | An idea that will still be true in a year, whichever project it came from | the knowledge wiki, if you have one | only in a project log |
 | Output from a scheduled task | `reports/` | `memory/` |
+| A code repo (an app, a tool, a local server) | the project's folder; `code/<name>` if its toolchain can't handle spaces in paths (rule 26) | the root |
 
 ## How information moves
 

@@ -111,8 +111,10 @@ Three tiers: **Project** (an end state, full folder), **Light** (one file), **Tr
 
 Folder and `index.md` · first `log.md` entry · row in `memory/projects.md` · next-number line updated · tasks entry. External board card too, if you use one.
 
-**Why:** When momentum is high and the context is full, one of these steps gets skipped, and the index and the folders drift apart.
-**How it's kept:** The `new-project` skill runs the checklist. `doctor` checks that folders and index rows match.
+Take the number from the index and advance the next-number line **in the same step**, before building anything else. Then check no folder already starts with that number.
+
+**Why:** When momentum is high and the context is full, one of these steps gets skipped, and the index and the folders drift apart. When the next-number line lagged behind, sessions handed out numbers that were already taken: one real workspace ended up with eleven numbers shared by two or three folders each. Logs and task entries then went into the wrong folder, and renumbering later meant rewriting every reference.
+**How it's kept:** The `new-project` skill runs the checklist. `doctor` checks that folders and index rows match, corrects a next-number line that has fallen behind, and reports any number used by more than one folder.
 
 ---
 
@@ -198,3 +200,13 @@ Scheduled tasks write reports to `reports/`, not to `memory/`, and `archive-trim
 
 **Why:** A weekly report written into the memory folder produced a new file every week, until they outnumbered the files that were actually memory.
 **How it's kept:** `archive-trim`; `doctor` flags reports written anywhere else.
+
+## Code in the workspace
+
+### 26. Code repos live with their project, and path-sensitive ones in `code/`
+
+A repo (an app, a tool, a local server) goes in its project's folder, not the workspace root. A repo whose toolchain can't cope with spaces in its path goes in `code/<name>`, with a note in the project's log saying where it is. Before moving any repo that already exists, check what points at it.
+
+**Why:** Loose repos piled up in the root of a real workspace, some of them gigabytes. Filing them was mostly easy, but a few broke when moved. An embedded-firmware toolchain (ESP-IDF) failed to build under `projects/NNN - Some Name/` because of the spaces, and built again once moved to a path under `code/` with none. Other repos were wired into things outside the workspace: an MCP server registered in another app's config by absolute path, a Python virtualenv whose scripts record their own location, a cron job, and a server that was still running.
+**How it's kept:** The adopt checklist in the `coppice-setup` skill. Record anything that must stay put in `setup.md`, with the reason.
+

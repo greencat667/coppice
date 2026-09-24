@@ -125,6 +125,15 @@ Save it as `working/coppice-migration-plan.md` in their folder, or wherever they
 
 - Do one step per session unless they ask for more. Show exactly what will change before changing it.
 - **Move, don't delete.** When trimming, move history into logs or the archive.
+- **Moving text changes what its relative links point at.** Task entries moved into `projects/NNN/log.md` still carry links written from the root, so rewrite them relative to the log's folder. The doctor's link check will list any you miss.
+- **Moving old reports into `reports/`:** `archive-trim` deletes anything there older than `budgets.reports_days`, so a task's existing back catalogue goes to `memory/archive/` instead. Only new reports go to `reports/`.
+- **Moving a code repo out of the root** (rule 26). Before moving it, check:
+  - app configs that name its absolute path: MCP server lists (for example `~/.lmstudio/mcp.json`, Claude's `claude_desktop_config.json`), launch agents and `crontab -l`
+  - running processes with it as their working directory (`lsof -a -d cwd`)
+  - virtualenvs (`.venv/`) whose scripts record their own path: rebuild them after the move (`uv sync`, or recreate and reinstall)
+  - build caches (CMake, ninja, Swift): rebuild them, or rewrite the recorded path
+  - spaces in the destination path, which some toolchains can't handle (ESP-IDF can't); use `code/<name>`
+  Update the configs only with the person's approval (they're outside the workspace), back them up first, and test that the tool runs from its new place.
 - Keep their start-here file working at every step, so a session that starts mid-migration still has what it needs.
 - Log each step in their own log file (or a project log for the migration), with what moved where.
 
