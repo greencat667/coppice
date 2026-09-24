@@ -9,7 +9,7 @@ Worth looking at:
 - **`TASKS-work.md`** — current state only; the history is in each project's `log.md`.
 - **`memory/flags.md`** — one item that has escalated to rung 2, so the briefing now proposes an action rather than repeating the flag.
 - **`memory/learning-log.md`** — two live experiments; the settled one has moved to the archive.
-- **`work-projects/002 - Member Survey 2026/status-board.md`** — a fast-moving project with its current state on one page.
+- **`work-projects/002-member-survey-2026/status-board.md`** — a fast-moving project with its current state on one page.
 
 Run the health check on it from the repository root:
 

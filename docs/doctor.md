@@ -29,6 +29,7 @@ The exit code is `1` if any error was found, `0` otherwise, so it can gate other
 | Every project folder has a `log.md` | error | 11 | Adds a stub log |
 | Project folders and `memory/projects.md` agree | warn | 14 | — |
 | No two project folders share a number | warn | 7 | — |
+| Project folder names are plain (`NNN-short-name`) | note | 27 | — (renaming is optional) |
 | The next-project-number line is ahead of every existing project | error | 7, 14 | Corrects the number |
 | Active projects have had a log entry in the last 30 days | note | 11 | — |
 | Markdown links inside the workspace resolve | warn | 7 | — |

@@ -132,13 +132,13 @@ class BrokenWorkspace(unittest.TestCase):
 
     def test_stale_active_project_log(self):
         with Workspace() as ws:
-            d = ws / "projects" / "002 - Quiet"
+            d = ws / "projects" / "002-quiet"
             d.mkdir()
             (d / "log.md").write_text("# log\n")
             age(d / "log.md", 45)
             idx = ws / "memory" / "projects.md"
             idx.write_text(idx.read_text().replace("Next project number: 001", "Next project number: 003")
-                           .replace("| 001 | [Name] |", "| 002 | Quiet |").replace("`projects/001 - Name/`", "`projects/002 - Quiet/`"))
+                           .replace("| 001 | [Name] |", "| 002 | Quiet |").replace("`projects/001-name/`", "`projects/002-quiet/`"))
             self.assertIn("project-log", checks(doctor.run(ws, TODAY), "info"))
 
     def test_broken_link(self):
@@ -231,6 +231,18 @@ class BrokenWorkspace(unittest.TestCase):
             logs = " ".join(f.message for f in rep.findings if f.check == "project-log")
             self.assertIn("003 - Second", logs)                      # the second folder is still checked
 
+    def test_plain_names_note(self):
+        with Workspace() as ws:
+            for name in ("004-heat-pumps", "005 - Old Style", "006-Café"):
+                (ws / "projects" / name).mkdir()
+                (ws / "projects" / name / "log.md").write_text("# log\n")
+            rep = doctor.run(ws, TODAY)
+            notes = [f for f in rep.findings if f.check == "names"]
+            self.assertEqual(len(notes), 1)                          # one grouped note, not one per folder
+            self.assertEqual(notes[0].severity, "info")
+            self.assertIn("2 folder(s)", notes[0].message)
+            self.assertNotIn("004-heat-pumps", notes[0].message)
+
     def test_working_inbox_and_stray_reports(self):
         with Workspace() as ws:
             f = ws / "working" / "draft.md"
@@ -248,16 +260,16 @@ class RealWorldNoise(unittest.TestCase):
 
     def test_code_projects_are_not_workspace_notes(self):
         with Workspace() as ws:
-            code = ws / "projects" / "001 - App" / "working" / "app"
+            code = ws / "projects" / "001-app" / "working" / "app"
             code.mkdir(parents=True)
-            (ws / "projects" / "001 - App" / "log.md").write_text("# log\n")
+            (ws / "projects" / "001-app" / "log.md").write_text("# log\n")
             (code / "package.json").write_text("{}")
             (code / "README.md").write_text("See [docs](docs/missing.md).\n")
             (code / "fixture.pem").write_text("x")
             (code / "test_keys.md").write_text("-----BEGIN RSA " + "PRIVATE KEY-----\n")   # built at runtime; no key material
             idx = ws / "memory" / "projects.md"
             idx.write_text(idx.read_text().replace("Next project number: 001", "Next project number: 002")
-                           .replace("`projects/001 - Name/`", "`projects/001 - App/`").replace("| 001 | [Name] |", "| 001 | App |"))
+                           .replace("`projects/001-name/`", "`projects/001-app/`").replace("| 001 | [Name] |", "| 001 | App |"))
             rep = doctor.run(ws, TODAY)
             self.assertNotIn("links", checks(rep))
             self.assertNotIn("secrets", checks(rep, "error"))

@@ -4,12 +4,12 @@
 
 ## 🔴 Now
 
-- **Solar for Schools bid** — case for support drafted (v2); the budget table still has placeholder installer costs. **Next:** get Marcus's revised quote for the second school roof, then finish the budget (bid due Fri 9 Oct). → [`log.md`](work-projects/001%20-%20Solar%20for%20Schools%20Bid/log.md)
+- **Solar for Schools bid** — case for support drafted (v2); the budget table still has placeholder installer costs. **Next:** get Marcus's revised quote for the second school roof, then finish the budget (bid due Fri 9 Oct). → [`log.md`](work-projects/001-solar-for-schools-bid/log.md)
 - **Board papers for Thu 1 Oct** — agenda agreed with Dana. **Next:** draft the bid-update and survey-update items by Mon 28 Sept; papers go out Tue 29 Sept.
 
 ## 🟡 Soon
 
-- **Member Survey 2026** — survey live, 212 responses so far. **Next:** reminder email to members who haven't opened it, Thu 1 Oct. → [`status-board.md`](work-projects/002%20-%20Member%20Survey%202026/status-board.md)
+- **Member Survey 2026** — survey live, 212 responses so far. **Next:** reminder email to members who haven't opened it, Thu 1 Oct. → [`status-board.md`](work-projects/002-member-survey-2026/status-board.md)
 - **Volunteer installer rota, October** — three gaps. **Next:** post the gaps in the volunteers' group on Mon 28 Sept. → [`rota`](working/volunteer-rota-october.md)
 
 ## 🟢 Waiting on someone

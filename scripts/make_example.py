@@ -2,6 +2,7 @@
 
 Run from the repository root:  python3 scripts/make_example.py
 """
+import re
 import shutil
 from pathlib import Path
 
@@ -33,7 +34,7 @@ Worth looking at:
 - **`TASKS-work.md`** — current state only; the history is in each project's `log.md`.
 - **`memory/flags.md`** — one item that has escalated to rung 2, so the briefing now proposes an action rather than repeating the flag.
 - **`memory/learning-log.md`** — two live experiments; the settled one has moved to the archive.
-- **`work-projects/002 - Member Survey 2026/status-board.md`** — a fast-moving project with its current state on one page.
+- **`work-projects/002-member-survey-2026/status-board.md`** — a fast-moving project with its current state on one page.
 
 Run the health check on it from the repository root:
 
@@ -196,12 +197,12 @@ w("TASKS-work.md", """
 
 ## 🔴 Now
 
-- **Solar for Schools bid** — case for support drafted (v2); the budget table still has placeholder installer costs. **Next:** get Marcus's revised quote for the second school roof, then finish the budget (bid due Fri 9 Oct). → [`log.md`](work-projects/001%20-%20Solar%20for%20Schools%20Bid/log.md)
+- **Solar for Schools bid** — case for support drafted (v2); the budget table still has placeholder installer costs. **Next:** get Marcus's revised quote for the second school roof, then finish the budget (bid due Fri 9 Oct). → [`log.md`](work-projects/001-solar-for-schools-bid/log.md)
 - **Board papers for Thu 1 Oct** — agenda agreed with Dana. **Next:** draft the bid-update and survey-update items by Mon 28 Sept; papers go out Tue 29 Sept.
 
 ## 🟡 Soon
 
-- **Member Survey 2026** — survey live, 212 responses so far. **Next:** reminder email to members who haven't opened it, Thu 1 Oct. → [`status-board.md`](work-projects/002%20-%20Member%20Survey%202026/status-board.md)
+- **Member Survey 2026** — survey live, 212 responses so far. **Next:** reminder email to members who haven't opened it, Thu 1 Oct. → [`status-board.md`](work-projects/002-member-survey-2026/status-board.md)
 - **Volunteer installer rota, October** — three gaps. **Next:** post the gaps in the volunteers' group on Mon 28 Sept. → [`rota`](working/volunteer-rota-october.md)
 
 ## 🟢 Waiting on someone
@@ -222,11 +223,11 @@ w("TASKS-personal.md", """
 
 ## 🔴 Now
 
-- **Oak bench** — legs cut and dry-fitted; one tenon too loose. **Next:** glue and wedge the loose tenon at Friday's class. → [`log.md`](personal-projects/001%20-%20Oak%20Bench/log.md)
+- **Oak bench** — legs cut and dry-fitted; one tenon too loose. **Next:** glue and wedge the loose tenon at Friday's class. → [`log.md`](personal-projects/001-oak-bench/log.md)
 
 ## 🟡 Soon
 
-- **Family recipe book** — 14 recipes collected, six with photos. **Next:** ask Gran for the two missing measurements on Sunday's call. → [`log.md`](personal-projects/002%20-%20Family%20Recipe%20Book/log.md)
+- **Family recipe book** — 14 recipes collected, six with photos. **Next:** ask Gran for the two missing measurements on Sunday's call. → [`log.md`](personal-projects/002-family-recipe-book/log.md)
 - **Book the van MOT** — due Tue 20 Oct. **Next:** book online by Sat 10 Oct.
 
 ## Trackers
@@ -288,10 +289,10 @@ w("memory/projects.md", """
 
 | # | Project | Tier | Status | Folder | Goal | Next |
 |---|---|---|---|---|---|---|
-| 001 | Solar for Schools Bid | Project | Active | `work-projects/001 - Solar for Schools Bid/` | £38k for solar on two primary schools; deadline 9 Oct | Finish the budget once the revised quote arrives |
-| 002 | Member Survey 2026 | Project | Active | `work-projects/002 - Member Survey 2026/` | 300+ responses and a findings paper for the AGM | Reminder email, 1 Oct |
-| 001 | Oak Bench | Project | Active | `personal-projects/001 - Oak Bench/` | A garden bench from the woodworking course | Fix the loose tenon |
-| 002 | Family Recipe Book | Project | Active | `personal-projects/002 - Family Recipe Book/` | A printed book of family recipes for December | Missing measurements from Gran |
+| 001 | Solar for Schools Bid | Project | Active | `work-projects/001-solar-for-schools-bid/` | £38k for solar on two primary schools; deadline 9 Oct | Finish the budget once the revised quote arrives |
+| 002 | Member Survey 2026 | Project | Active | `work-projects/002-member-survey-2026/` | 300+ responses and a findings paper for the AGM | Reminder email, 1 Oct |
+| 001 | Oak Bench | Project | Active | `personal-projects/001-oak-bench/` | A garden bench from the woodworking course | Fix the loose tenon |
+| 002 | Family Recipe Book | Project | Active | `personal-projects/002-family-recipe-book/` | A printed book of family recipes for December | Missing measurements from Gran |
 
 ## Light
 
@@ -308,7 +309,7 @@ w("memory/projects.md", """
 
 | # | Project | Closed | Outcome |
 |---|---|---|---|
-| 003 | Heat Pump Open Day | 2026-09-14 | 64 visitors, 41 sign-ups — `work-projects/003 - Heat Pump Open Day/` |
+| 003 | Heat Pump Open Day | 2026-09-14 | 64 visitors, 41 sign-ups — `work-projects/003-heat-pump-open-day/` |
 """)
 
 w("memory/learning-log.md", """
@@ -437,8 +438,12 @@ w("working/volunteer-rota-october.md", """
 """)
 
 
+def slug(name):
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
 def project(root, num, name, desc, status, started, goal, nxt, brief, log, extra=None):
-    base = f"{root}/{num} - {name}"
+    base = f"{root}/{num}-{slug(name)}"
     has_board = bool(extra and "status-board.md" in extra)
     w(f"{base}/index.md", f"""
 # {num} — {name}

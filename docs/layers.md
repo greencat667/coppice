@@ -14,7 +14,7 @@ You don't need every layer. Levels 0 to 3 in `docs/maturity.md` say which to add
 | **Now** | What's live, and what's the next action on each thing? | `TASKS*.md` | Every session | ✅ (current context) |
 | **Recently** | What happened in the last few weeks? | `memory/recent*.md` | Every session, trimmed weekly | ✅ (current context) |
 | **Projects** | What's in flight, and what number comes next? | `memory/projects.md` | When a project starts, changes status or closes | On demand |
-| **Project history** | What happened in this project, and why? | `projects/NNN - Name/log.md` | Each session on that project, append-only | On demand |
+| **Project history** | What happened in this project, and why? | `projects/NNN-short-name/log.md` | Each session on that project, append-only | On demand |
 | **Reference** | Who's who, what the jargon means, what the source documents say | `memory/glossary.md`, `memory/people/`, `context/` | Occasionally | On demand |
 | **Learning** | How is the assistant's approach being adjusted? | `memory/learning-log.md` | When a pattern is noticed | On demand |
 | **Knowledge** *(optional)* | What have we learned that stays true whichever project it came from? | A wiki folder, e.g. `research/wiki/` | Weekly, in small doses | On demand |

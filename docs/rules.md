@@ -88,7 +88,7 @@ Anything left there at the end of a session gets filed into a project or flagged
 
 ### 11. Every project has an append-only log
 
-`projects/NNN - Name/log.md`: a dated entry per session that touched the project. Never edit old entries; add a correcting one.
+`projects/NNN-short-name/log.md`: a dated entry per session that touched the project. Never edit old entries; add a correcting one.
 
 **Why:** The log is where history goes so that tasks files and recent sessions can stay small (rules 5 and 6). When logs were skipped, the task files quietly diverged from what had actually happened, and nobody could reconstruct why.
 **How it's kept:** The end-of-session protocol. `doctor` flags project folders with no `log.md`, and active projects whose log hasn't changed in 30 days.
@@ -201,12 +201,19 @@ Scheduled tasks write reports to `reports/`, not to `memory/`, and `archive-trim
 **Why:** A weekly report written into the memory folder produced a new file every week, until they outnumbered the files that were actually memory.
 **How it's kept:** `archive-trim`; `doctor` flags reports written anywhere else.
 
-## Code in the workspace
+## Paths and code
 
 ### 26. Code repos live with their project, and path-sensitive ones in `code/`
 
 A repo (an app, a tool, a local server) goes in its project's folder, not the workspace root. A repo whose toolchain can't cope with spaces in its path goes in `code/<name>`, with a note in the project's log saying where it is. Before moving any repo that already exists, check what points at it.
 
-**Why:** Loose repos piled up in the root of a real workspace, some of them gigabytes. Filing them was mostly easy, but a few broke when moved. An embedded-firmware toolchain (ESP-IDF) failed to build under `projects/NNN - Some Name/` because of the spaces, and built again once moved to a path under `code/` with none. Other repos were wired into things outside the workspace: an MCP server registered in another app's config by absolute path, a Python virtualenv whose scripts record their own location, a cron job, and a server that was still running.
+**Why:** Loose repos piled up in the root of a real workspace, some of them gigabytes. Filing them was mostly easy, but a few broke when moved. An embedded-firmware toolchain (ESP-IDF) failed to build under a project folder whose name had spaces, and built again once moved to a path under `code/` with none. Other repos were wired into things outside the workspace: an MCP server registered in another app's config by absolute path, a Python virtualenv whose scripts record their own location, a cron job, and a server that was still running.
 **How it's kept:** The adopt checklist in the `coppice-setup` skill. Record anything that must stay put in `setup.md`, with the reason.
+
+### 27. Names are plain: lower-case, hyphens, no spaces
+
+Folders and files the assistant creates use lower-case ASCII letters, digits and hyphens: `projects/012-renewable-energy/`, `outputs/funding-brief-v2.docx`. No spaces, accents, apostrophes, ampersands or brackets. The human-readable title goes in the index and the file itself, not the path. Dates in names are ISO (`2026-09-24`).
+
+**Why:** Names like `NNN - Name` read well but cost something every time a tool touches them. In one workspace, links the assistant wrote to spaced folders didn't open until they were URL-encoded, every shell command needed careful quoting, and a firmware toolchain refused to build inside a spaced folder at all (rule 26). Plain names avoid all of that.
+**How it's kept:** The `new-project` skill makes the slug. `doctor` notes folders with spaces or special characters, as one grouped note per folder, because renaming existing folders is optional: an adopted workspace can keep its old names and use plain ones for new projects only.
 

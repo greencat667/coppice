@@ -4,11 +4,11 @@
 
 ## 🔴 Now
 
-- **Oak bench** — legs cut and dry-fitted; one tenon too loose. **Next:** glue and wedge the loose tenon at Friday's class. → [`log.md`](personal-projects/001%20-%20Oak%20Bench/log.md)
+- **Oak bench** — legs cut and dry-fitted; one tenon too loose. **Next:** glue and wedge the loose tenon at Friday's class. → [`log.md`](personal-projects/001-oak-bench/log.md)
 
 ## 🟡 Soon
 
-- **Family recipe book** — 14 recipes collected, six with photos. **Next:** ask Gran for the two missing measurements on Sunday's call. → [`log.md`](personal-projects/002%20-%20Family%20Recipe%20Book/log.md)
+- **Family recipe book** — 14 recipes collected, six with photos. **Next:** ask Gran for the two missing measurements on Sunday's call. → [`log.md`](personal-projects/002-family-recipe-book/log.md)
 - **Book the van MOT** — due Tue 20 Oct. **Next:** book online by Sat 10 Oct.
 
 ## Trackers

@@ -116,7 +116,7 @@ Save it as `working/coppice-migration-plan.md` in their folder, or wherever they
    1. Secrets out.
    2. Add `setup.md` and split tool details out of the profile.
    3. Trim the files read every session to budget, moving history into project logs and the archive, not deleting it. If a tasks-like file turns out to be **all history, with nothing current**, don't trim it: archive it whole, and build a fresh tasks file by asking the person what's actually live, as in New mode.
-   4. Rename to Coppice names, or add a `setup.md` Contexts table pointing at their existing names; either works.
+   4. Rename to Coppice names, or add a `setup.md` Contexts table pointing at their existing names; either works. **Don't rename existing project folders** to the plain style (rule 27): links, scripts and other tools point at them. Use plain names for new projects from now on.
    5. Add the trim and doctor scheduled tasks.
    6. Clear root clutter and the inbox.
 5. **What to leave alone:** anything idiosyncratic that works for them.

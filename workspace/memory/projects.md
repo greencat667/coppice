@@ -8,7 +8,7 @@
 
 ## Tiers
 
-- **Project** — has an end state. Full folder in `projects/NNN - Name/`.
+- **Project** — has an end state. Full folder in `projects/NNN-short-name/`.
 - **Light** — small, short, one output. A single file in `working/` or a context file, listed here with no number.
 - **Tracker** — ongoing, no end state. Lives as a line in the tasks file's *Trackers* section; listed here only if it has its own notes.
 
@@ -16,7 +16,7 @@
 
 | # | Project | Tier | Status | Folder | Goal | Next |
 |---|---|---|---|---|---|---|
-| 001 | [Name] | Project | Active | `projects/001 - Name/` | [one line] | [one line] |
+| 001 | [Name] | Project | Active | `projects/001-name/` | [one line] | [one line] |
 
 ## Light
 

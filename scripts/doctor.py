@@ -397,6 +397,7 @@ def check_working(ws, rep, today):
 
 
 PROJECT_DIR = re.compile(r"^(\d{3,4})\s*-\s*.+")
+PLAIN_NAME = re.compile(r"^\d{3,4}-[a-z0-9]+(?:-[a-z0-9]+)*$")   # rule 27: 012-renewable-energy
 # "Next project number: 012", "Next project number (work-projects): 012", or "Next client project number: 012",
 # where a word before "project" names the root it belongs to ("client" → "client projects", "personal" → "personal-projects").
 NEXT_NUMBER = re.compile(r"(?i)next\s+(?:([A-Za-z][\w-]*)\s+)?project number(?:\s*\(([^)]+)\))?:\s*\**\s*(\d+)")
@@ -427,7 +428,7 @@ def check_projects(ws, rep, budgets, today, fix):
                 if d.is_dir() and not d.name.startswith(("_", ".")):
                     m = PROJECT_DIR.match(d.name)
                     if not m:
-                        rep.add("info", "projects", f"`{root}/{d.name}` doesn't follow the `NNN - Name` pattern.", f"{root}/{d.name}")
+                        rep.add("info", "projects", f"`{root}/{d.name}` doesn't follow the `NNN-short-name` pattern.", f"{root}/{d.name}")
                         continue
                     num = int(m.group(1))
                     if num in folders:
@@ -436,6 +437,11 @@ def check_projects(ws, rep, budgets, today, fix):
                         folders[num] = d
                     all_dirs.append(d)
         any_folders = any_folders or bool(folders)
+        unplain = [d.name for d in all_dirs if not PLAIN_NAME.match(d.name)]
+        if unplain:
+            shown = ", ".join(f"`{x}`" for x in unplain[:3]) + (f" and {len(unplain) - 3} more" if len(unplain) > 3 else "")
+            rep.add("info", "names", f"{len(unplain)} folder(s) in `{root}/` have spaces, capitals or special characters in their names ({shown}). "
+                    "Renaming existing folders is optional; use `NNN-short-name` for new ones (rule 27).", f"{root}/")
         for num, names in dupes.items():
             rep.add("warn", "projects", f"Project number {num:03d} is used by {len(names)} folders in `{root}/`: "
                     + ", ".join(f"`{x}`" for x in names) + ". Entries and logs can end up in the wrong one; renumber one of them.",
@@ -450,7 +456,7 @@ def check_projects(ws, rep, budgets, today, fix):
                     rep.add("error", "project-log", f"`{root}/{d.name}` has no `log.md` (rule 11).", f"{root}/{d.name}")
         if not text:
             continue
-        # Index rows refer to folders as `root/NNN - Name/` in backticks.
+        # Index rows refer to folders as `root/NNN-name/` (or the older `root/NNN - Name/`) in backticks.
         path_re = re.compile(r"`" + re.escape(root) + r"/(\d{3,4})\s*-\s*([^`/|]+)/?`")
         indexed = {int(m.group(1)): m.group(2).strip() for m in path_re.finditer(text)}
         active = {int(m.group(1)) for m in path_re.finditer(active_body)}
