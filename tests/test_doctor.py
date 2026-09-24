@@ -212,6 +212,25 @@ class BrokenWorkspace(unittest.TestCase):
             self.assertIn("archive-trim", msgs)      # weekly, last ran 22 days ago
             self.assertIn("failed", msgs)            # doctor's last run failed
 
+    def test_schedule_gaps(self):
+        self.assertEqual(doctor.allowed_gap_days("monthly, 1st"), 32)    # "monthly" starts with "mon"
+        self.assertEqual(doctor.allowed_gap_days("weekly, Monday 06:01"), 8)
+        self.assertEqual(doctor.allowed_gap_days("Mon–Wed 08:00"), 8)
+        self.assertEqual(doctor.allowed_gap_days("quarterly"), 93)
+        self.assertEqual(doctor.allowed_gap_days("daily 21:08"), 2)
+
+    def test_duplicate_project_numbers(self):
+        with Workspace() as ws:
+            for name in ("003 - First", "003 - Second"):
+                (ws / "projects" / name).mkdir()
+            (ws / "projects" / "003 - First" / "log.md").write_text("# log\n")
+            rep = doctor.run(ws, TODAY)
+            dup = " ".join(f.message for f in rep.findings if f.check == "projects")
+            self.assertIn("003 - First", dup)
+            self.assertIn("003 - Second", dup)
+            logs = " ".join(f.message for f in rep.findings if f.check == "project-log")
+            self.assertIn("003 - Second", logs)                      # the second folder is still checked
+
     def test_working_inbox_and_stray_reports(self):
         with Workspace() as ws:
             f = ws / "working" / "draft.md"

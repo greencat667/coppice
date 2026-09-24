@@ -198,10 +198,13 @@ def allowed_gap_days(when: str):
         return 2
     if "fortnight" in w:
         return 16
-    if "week" in w or re.search(r"\b(mon|tue|wed|thu|fri|sat|sun)", w):
-        return 8
+    # Month and quarter before weekday names: "monthly" starts with "mon".
+    if "quarter" in w:
+        return 93
     if "month" in w:
         return 32
+    if "week" in w or re.search(r"\b(mon|tue|wed|thu|fri|sat|sun)", w):
+        return 8
     return None
 
 
@@ -418,7 +421,7 @@ def check_projects(ws, rep, budgets, today, fix):
     any_folders = False
     for root in roots:
         pdir = ws / root
-        folders = {}
+        folders, dupes, all_dirs = {}, {}, []
         if pdir.is_dir():
             for d in sorted(pdir.iterdir()):
                 if d.is_dir() and not d.name.startswith(("_", ".")):
@@ -426,9 +429,18 @@ def check_projects(ws, rep, budgets, today, fix):
                     if not m:
                         rep.add("info", "projects", f"`{root}/{d.name}` doesn't follow the `NNN - Name` pattern.", f"{root}/{d.name}")
                         continue
-                    folders[int(m.group(1))] = d
+                    num = int(m.group(1))
+                    if num in folders:
+                        dupes.setdefault(num, [folders[num].name]).append(d.name)
+                    else:
+                        folders[num] = d
+                    all_dirs.append(d)
         any_folders = any_folders or bool(folders)
-        for num, d in folders.items():
+        for num, names in dupes.items():
+            rep.add("warn", "projects", f"Project number {num:03d} is used by {len(names)} folders in `{root}/`: "
+                    + ", ".join(f"`{x}`" for x in names) + ". Entries and logs can end up in the wrong one; renumber one of them.",
+                    f"{root}/{names[-1]}")
+        for d in all_dirs:
             if not (d / "log.md").exists():
                 if fix:
                     (d / "log.md").write_text(f"# {d.name}: log\n\n> Append-only. Newest at the bottom.\n\n## {today} — Log created by coppice doctor\n\n"
