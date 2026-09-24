@@ -54,6 +54,19 @@ class Trim(unittest.TestCase):
             self.assertEqual(trim.run(ws, TODAY), [])         # idempotent
             self.assertNotIn("recent-window", {f.check for f in doctor.run(ws, TODAY).findings})
 
+    def test_section_headings_stay_in_the_learning_log(self):
+        with Workspace() as ws:
+            ll = ws / "memory" / "learning-log.md"
+            ll.write_text("# Learning log\n\n## Active\n\n### 2026-09-01 — live [trying]\n\nkeep\n\n"
+                          "### 2026-06-01 — last active one [graduated → setup.md]\n\ngone\n\n"
+                          "## Discarded\n\n*Kept as a record.*\n\n## Strategic insights\n\n### 2026-03-03 — an insight\n\nstays\n")
+            trim.run(ws, TODAY)
+            text = ll.read_text()
+            for s in ("## Discarded", "*Kept as a record.*", "## Strategic insights", "an insight", "live"):
+                self.assertIn(s, text)
+            self.assertNotIn("last active one", text)
+            self.assertNotIn("## Discarded", (ws / "memory" / "archive" / "learning-log-archive.md").read_text())
+
     def test_cli_heartbeat(self):
         with Workspace() as ws:
             with contextlib.redirect_stdout(io.StringIO()):

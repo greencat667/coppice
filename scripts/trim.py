@@ -27,6 +27,7 @@ import doctor  # noqa: E402  (same folder; shares the parsers)
 
 HEARTBEAT_KEEP_DAYS = 60
 LL_ENTRY = re.compile(r"^### .*$", re.M)
+LL_SECTION = re.compile(r"^#{1,3} ", re.M)
 LL_DONE = re.compile(r"\[(graduated|discarded)[^\]]*\]", re.I)
 
 
@@ -59,14 +60,17 @@ def trim_learning_log(ws, dry, actions):
     if not p.exists():
         return
     text = doctor.read(p)
-    heads = list(LL_ENTRY.finditer(text))
-    if not heads:
+    if not LL_ENTRY.search(text):
         return
-    keep, done = [text[: heads[0].start()]], []
-    for i, m in enumerate(heads):
-        end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
-        chunk = text[m.start(): end]
-        (done if LL_DONE.search(m.group(0)) else keep).append(chunk)
+    # An entry runs to the next heading of any level up to ###, so a section
+    # heading after the last entry (## Discarded, say) stays in the log.
+    cuts = [m.start() for m in LL_SECTION.finditer(text)]
+    starts = [0] + cuts if not cuts or cuts[0] != 0 else cuts
+    keep, done = [], []
+    for i, s in enumerate(starts):
+        chunk = text[s: starts[i + 1] if i + 1 < len(starts) else len(text)]
+        head = LL_ENTRY.match(chunk)
+        (done if head and LL_DONE.search(head.group(0)) else keep).append(chunk)
     if not done:
         return
     actions.append(f"Moved {len(done)} graduated or discarded learning-log entr{'y' if len(done) == 1 else 'ies'} to "
